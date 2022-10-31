@@ -2,7 +2,7 @@
 *.*~
 project.lock.json
 .DS_Store
-*.pyc
+*.pyc 
 nupkg/
 
 # Visual Studio Code
