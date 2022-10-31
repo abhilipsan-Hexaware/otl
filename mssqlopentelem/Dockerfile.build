@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+WORKDIR /src
+COPY ["Code/mssqlopentelem.Api/mssqlopentelem.Api.csproj", "Code/mssqlopentelem.Api/"]
+COPY ["Code/mssqlopentelem.Business/mssqlopentelem.Business.csproj", "Code/mssqlopentelem.Business/"]
+COPY ["Code/mssqlopentelem.Data/mssqlopentelem.Data.csproj", "Code/mssqlopentelem.Data/"]
+COPY ["Code/mssqlopentelem.Entities/mssqlopentelem.Entities.csproj", "Code/mssqlopentelem.Entities/"]
+COPY ["Code/mssqlopentelem.Test.Api/mssqlopentelem.Test.Api.csproj", "Code/mssqlopentelem.Test.Api/"]
+COPY ["Code/mssqlopentelem.Test.Business/mssqlopentelem.Test.Business.csproj", "Code/mssqlopentelem.Test.Business/"]
+RUN dotnet restore "Code/mssqlopentelem.Api/mssqlopentelem.Api.csproj"
+COPY . .
+WORKDIR "/src/Code/mssqlopentelem.Api"
+RUN dotnet build "mssqlopentelem.Api.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "mssqlopentelem.Api.csproj" -c Release -o /app/publish
+
+WORKDIR /src
+RUN dotnet test --results-directory /testresults --logger "trx;LogFileName=testresults.Api.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=/testresults/coverage/ /p:MergeWith=/testresults/coverage/coverage.json "Code/mssqlopentelem.Test.Api/mssqlopentelem.Test.Api.csproj"
+RUN dotnet test --results-directory /testresults --logger "trx;LogFileName=testresults.Api.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=/testresults/coverage/ /p:MergeWith=/testresults/coverage/coverage.json "Code/mssqlopentelem.Test.Business/mssqlopentelem.Test.Business.csproj"

@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+WORKDIR /src
+COPY ["Code/withOpentelem.Api/withOpentelem.Api.csproj", "Code/withOpentelem.Api/"]
+COPY ["Code/withOpentelem.Business/withOpentelem.Business.csproj", "Code/withOpentelem.Business/"]
+COPY ["Code/withOpentelem.Data/withOpentelem.Data.csproj", "Code/withOpentelem.Data/"]
+COPY ["Code/withOpentelem.Entities/withOpentelem.Entities.csproj", "Code/withOpentelem.Entities/"]
+COPY ["Code/withOpentelem.Test.Api/withOpentelem.Test.Api.csproj", "Code/withOpentelem.Test.Api/"]
+COPY ["Code/withOpentelem.Test.Business/withOpentelem.Test.Business.csproj", "Code/withOpentelem.Test.Business/"]
+RUN dotnet restore "Code/withOpentelem.Api/withOpentelem.Api.csproj"
+COPY . .
+WORKDIR "/src/Code/withOpentelem.Api"
+RUN dotnet build "withOpentelem.Api.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "withOpentelem.Api.csproj" -c Release -o /app/publish
+
+WORKDIR /src
+RUN dotnet test --results-directory /testresults --logger "trx;LogFileName=testresults.Api.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=/testresults/coverage/ /p:MergeWith=/testresults/coverage/coverage.json "Code/withOpentelem.Test.Api/withOpentelem.Test.Api.csproj"
+RUN dotnet test --results-directory /testresults --logger "trx;LogFileName=testresults.Api.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=/testresults/coverage/ /p:MergeWith=/testresults/coverage/coverage.json "Code/withOpentelem.Test.Business/withOpentelem.Test.Business.csproj"
