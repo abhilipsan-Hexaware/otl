@@ -30,7 +30,7 @@ jobs:
         run: docker run --name ${{ env.CONTAINER_NAME }} -d ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:${{ github.run_number }}
       - name: copy build files
         run: |-
-          docker cp ${{ env.CONTAINER_NAME }}:/app/test/ ./${{ env.DOCKER_PUBLISH_CONTEXT }}
+          docker cp ${{ env.CONTAINER_NAME }}:/app/publish/ ./${{ env.DOCKER_PUBLISH_CONTEXT }}
           docker stop ${{ env.CONTAINER_NAME }}
           docker rm ${{ env.CONTAINER_NAME }}
       - name: Build and  push image to container registry
