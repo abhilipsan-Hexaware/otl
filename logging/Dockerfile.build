@@ -5,9 +5,9 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
 WORKDIR /src
 COPY ["Code/logging.Api/logging.Api.csproj", "Code/logging.Api/"]
-COPY ["Code/logging.Business/logging.Business.csproj", "Code/logging.Business/"]
+COPY ["Code/logging.Business/logging.BusinessServices.csproj", "Code/logging.Business/"]
 COPY ["Code/logging.Data/logging.Data.csproj", "Code/logging.Data/"]
-COPY ["Code/logging.Entities/logging.Entities.csproj", "Code/logging.Entities/"]
+COPY ["Code/logging.Entities/logging.BusinessEntities.csproj", "Code/logging.Entities/"]
 COPY ["Code/logging.Test.Api/logging.Test.Api.csproj", "Code/logging.Test.Api/"]
 COPY ["Code/logging.Test.Business/logging.Test.Business.csproj", "Code/logging.Test.Business/"]
 RUN dotnet restore "Code/logging.Api/logging.Api.csproj"
