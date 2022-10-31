@@ -9,6 +9,7 @@
     <PackageReference Include="FluentValidation" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.6" />
     <PackageReference Include="Scrutor" Version="3.2.1" />
+    <PackageReference Include="RestSharp" Version="108.0.2" />
   </ItemGroup>
 
   <PropertyGroup>

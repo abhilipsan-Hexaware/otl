@@ -1,19 +1,22 @@
-using logging.BusinessServices.Interfaces;
-using logging.Data.Interfaces;
-using logging.BusinessEntities.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using logging.BusinessEntities.Entities;
+using logging.BusinessServices.Interfaces;
+using logging.Data.Interfaces;
+using RestSharp;
 
 namespace logging.BusinessServices.Services
 {
     public class DocumentService : IDocumentService
     {
         IDocumentRepository _DocumentRepository;
+        RestClient _client;
 
         public DocumentService(IDocumentRepository DocumentRepository)
         {
-           this._DocumentRepository = DocumentRepository;
+            _client = new RestClient("https://localhost:5003/");
+            this._DocumentRepository = DocumentRepository;
         }
         public IEnumerable<Document> GetAll()
         {
@@ -27,6 +30,11 @@ namespace logging.BusinessServices.Services
 
         public Document Save(Document Document)
         {
+            var url = "Document/Validate";
+            var request = new RestRequest(url, Method.Post);
+            request.RequestFormat = RestSharp.DataFormat.Json;
+            request.AddBody(Document);
+            var response = _client.Execute(request);
             _DocumentRepository.Save(Document);
             return Document;
         }
