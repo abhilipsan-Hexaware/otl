@@ -1,0 +1,39 @@
+name: ci-dptnet
+'on':
+  push:
+    branches:
+      - main
+    paths:
+      - '**/dotnet/**'
+env:
+  DOCKER_BUILD_FILE_PATH: ./dotnet/Dockerfile.build
+  DOCKER_FILE_PATH: ./dotnet/Dockerfile.publish
+  DOCKER_BUILD_CONTEXT: dotnet
+  DOCKER_PUBLISH_CONTEXT: dotnet
+  CONTAINER_NAME: test
+  REPOSITORY_NAME: test
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v3
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.CR_LOGIN_SERVER }}
+          username: ${{ secrets.CR_USERNAME }}
+          password: ${{ secrets.CR_PASSWORD }}
+      - name: Build and Test
+        run: docker build ${{ env.DOCKER_BUILD_CONTEXT }} -f ${{ env.DOCKER_BUILD_FILE_PATH }} -t ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:test
+      - name: Runs docker
+        run: docker run --name ${{ env.CONTAINER_NAME }} -d ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:test
+      - name: copy build files
+        run: |-
+          docker cp ${{ env.CONTAINER_NAME }}:/app/publish/ ./${{ env.DOCKER_PUBLISH_CONTEXT }}
+          docker stop ${{ env.CONTAINER_NAME }}
+          docker rm ${{ env.CONTAINER_NAME }}
+      - name: Build and push image to container registry
+        run: |-
+          docker build ${{ env.DOCKER_BUILD_CONTEXT }} -f ${{ env.DOCKER_FILE_PATH }} -t ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:test
+          docker push ${{ secrets.CR_LOGIN_SERVER }}/${{ env.REPOSITORY_NAME }}:test
